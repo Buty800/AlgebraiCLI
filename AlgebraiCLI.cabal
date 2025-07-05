@@ -58,7 +58,12 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  MyLib
+    exposed-modules:  
+      Classifier
+      , Parser
+      , Simplifier
+      , Solver
+      , Types
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -67,13 +72,15 @@ library
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.17.2.0
+    build-depends:    
+      base ^>=4.17.2.0
+      , containers
 
     -- Directories containing source files.
     hs-source-dirs:   src
 
     -- Base language which the package is written in.
-    default-language: GHC2021
+    default-language: Haskell2010
 
 executable AlgebraiCLI
     -- Import common warning flags.
@@ -97,14 +104,14 @@ executable AlgebraiCLI
     hs-source-dirs:   app
 
     -- Base language which the package is written in.
-    default-language: GHC2021
+    default-language: Haskell2010
 
 test-suite AlgebraiCLI-test
     -- Import common warning flags.
     import:           warnings
 
     -- Base language which the package is written in.
-    default-language: GHC2021
+    default-language: Haskell2010
 
     -- Modules included in this executable, other than Main.
     -- other-modules:
@@ -123,5 +130,7 @@ test-suite AlgebraiCLI-test
 
     -- Test dependencies.
     build-depends:
-        base ^>=4.17.2.0,
-        AlgebraiCLI
+        base ^>=4.17.2.0
+        , AlgebraiCLI
+        , HUnit
+        , containers
