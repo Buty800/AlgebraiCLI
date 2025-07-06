@@ -1,1 +1,1 @@
-module Simplifier where 
+module Simplifier where
