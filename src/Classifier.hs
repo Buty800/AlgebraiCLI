@@ -6,29 +6,36 @@ vars :: Expr -> Set.Set (Char,Int)
 vars expr = case expr of 
    Constant _ -> Set.empty
    Var x -> Set.singleton x
-   Add x y -> Set.union (vars x) (vars y)
-   Sub x y -> Set.union (vars x) (vars y) 
-   Mul x y -> Set.union (vars x) (vars y)  
-   Div x y -> Set.union (vars x) (vars y) 
+   Add xs -> Set.unions $ map vars xs
+   Neg x -> vars x 
+   Mul xs -> Set.unions $ map vars xs
+   Inv x -> vars x
    Pow x y -> Set.union (vars x) (vars y) 
 
-simplify = id
 
 isNat :: (RealFrac n) => n -> Bool
 isNat n = n >= 0 && fromIntegral (floor n) == n
+
+isConstant :: Expr -> Bool
+isConstant expr = case expr of
+  Constant _ -> True
+  Var _ -> False
+  Add xs -> all isConstant xs
+  Neg x -> isConstant x
+  Mul xs -> all isConstant xs
+  Inv x -> isConstant x
+  Pow x y -> isConstant x && isConstant y 
 
 isPolynomial :: Expr -> Bool
 isPolynomial expr = case expr of 
   Constant _ -> True
   Var _ -> True
-  Add x y -> isPolynomial x && isPolynomial y
-  Sub x y -> isPolynomial x && isPolynomial y
-  Mul x y -> isPolynomial x && isPolynomial y
-  Div _ (Constant _) -> True
-  Div x y -> isPolynomial $ Div x (simplify y)   
+  Add xs -> all isPolynomial xs
+  Neg x -> isPolynomial x
+  Mul xs -> all isPolynomial xs
+  Inv x -> isConstant x    
   Pow x (Constant n) -> isPolynomial x && isNat n
-  Pow x y -> isPolynomial $ Pow x (simplify y) 
-
+{-
 grad :: Expr -> Int 
 grad expr = case expr of 
   Constant _ -> 0
@@ -38,5 +45,5 @@ grad expr = case expr of
   Mul x y -> grad x + grad y 
   Div x y -> grad x - grad y 
   Pow x (Constant n) -> (grad x) * (floor n)
-
+-}
 

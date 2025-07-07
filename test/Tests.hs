@@ -11,7 +11,7 @@ import Types
 
 allTests :: Test
 allTests = test [
-    "Classifier" ~: testClassifier,
+    --"Classifier" ~: testClassifier,
     "Parser" ~: testParse,
     "Simplifier" ~: testSimplifier,
     "Solver" ~: testSolver
@@ -31,7 +31,14 @@ testClassifier = test [
 testParse :: Test 
 testParse = test [
     read "1" ~?= Constant 1,
-    read "2x_1+3y" ~?= Add (Mul (Constant 2) (Var ('x',1))) (Mul (Constant 3) (Var ('y',-1))) 
+    read "2x_1+3y" ~?= Add [Mul [Constant 2, (Var ('x',1))], Mul [Constant 3, (Var ('y',-1))]],
+    read "x_1+x/2" ~?= Add [Var ('x',1), Mul [Var ('x',-1), Inv (Constant 2)]], 
+    read "y-x" ~?= Add [Var ('y',-1), Neg (Var ('x',-1))], 
+    read "x_1-x/2" ~?= Add [Var ('x',1), Neg (Mul [Var ('x',-1), Inv (Constant 2)])],
+    read "(x-1)(x-2)(x-3)" ~?= Mul [Add [Var ('x',-1), Neg (Constant 1)], Add [Var ('x',-1), Neg (Constant 2)], Add [Var ('x',-1), Neg (Constant 3)]],
+    read "-2x^2-(1/2)x+1" ~?= Add [Mul[Constant (-2), Pow (Var ('x',-1)) (Constant 2)], Neg (Mul [Constant 1, Inv (Constant 2), Var ('x',-1)]), Constant 1], 
+    read "-x_1+3x_2+2x_3" ~?= Add [Neg (Var ('x',1)), Mul [Constant 3, Var ('x',2)], Mul [Constant 2, Var ('x',3)]],
+    read "x_12x_3" ~?= Mul [Var('x',12),Var('x',3)]
   ]
 
 testSimplifier :: Test

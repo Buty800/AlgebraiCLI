@@ -82,6 +82,15 @@ ident = do x  <- lower
            xs <- many alphanum
            return (x:xs)
 
+oneOf :: [Char] -> Parser Char 
+oneOf cs = sat (flip elem cs)
+
+--fails if p can consume the input
+notFollowedBy :: Parser a -> Parser ()
+notFollowedBy p = P $ \input -> case (parse p input) of
+  [] -> [((), input)]
+  _  -> []
+
 nat :: Parser Int
 nat = some digit >>= return.read
 
@@ -102,8 +111,8 @@ var =
   do 
   x <- letter
   char '_'
-  n <- digit 
-  return (x,read ['0',n])
+  n <- some digit 
+  return (x,read n)
   <|>
   do
   x <- letter 
@@ -125,16 +134,20 @@ between open p close = do string open
                           string close
                           return x
 
-expr = factor <| expop <| mulop <| addop
-factor = 
-  between "(" expr ")" <|> 
-  (float >>= return.Constant) <|> 
-  (var >>= return.Var) <|>
-  (char '-' >> factor >>= return.(Sub (Constant 0)))
 
-addop = (char '+' >> return Add) <|> (char '-' >> return Sub)
-mulop = (char '*' >> return Mul) <|> (char '/' >> return Div) <|> (return Mul)
+expr = base <| expop <| mulop <| addop
+base =
+      (float >>= return.Constant) 
+  <|> (var >>= return.Var) 
+  <|> (char '-' >> base >>= return.Neg)
+  <|> (between "(" expr ")") 
+    
+
+addop = (char '+' >> return add) <|> (char '-' >> return sub)  
+mulop = (char '*' >> return mul) <|> (char '/' >> return divide) <|> implicitMult
 expop = char '^' >> return Pow
+
+implicitMult = notFollowedBy (oneOf "+-*/^)") >> return mul
 
 instance Read Expr where 
   readsPrec _ = parse expr 
